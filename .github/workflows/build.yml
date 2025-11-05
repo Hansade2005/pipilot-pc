@@ -55,7 +55,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: macos-installer
-        path: out/make/zip/darwin/x64/*.zip
+        path: out/make/*.dmg
 
     - name: Upload Linux DEB installer
       if: matrix.os == 'ubuntu-latest'
