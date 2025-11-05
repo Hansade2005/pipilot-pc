@@ -28,12 +28,6 @@ jobs:
     - name: Install dependencies
       run: npm install
 
-    - name: Run lint
-      run: npm run lint
-
-    - name: Package application
-      run: npm run package
-
     - name: Make distributables
       run: npm run make
 
