@@ -24,7 +24,12 @@
   },
   "config": {
     "forge": {
-      "packagerConfig": {},
+      "packagerConfig": {
+        "icon": "assets/icons/icon-512x512.png",
+        "win32metadata": {
+          "minimumSystemVersion": "10.0.0"
+        }
+      },
       "makers": [
         {
           "name": "@electron-forge/maker-squirrel"
