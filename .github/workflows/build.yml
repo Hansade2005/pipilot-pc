@@ -31,11 +31,47 @@ jobs:
     - name: Make distributables
       run: npm run make
 
-    - name: Upload artifacts
+    - name: Upload Windows installer
+      if: matrix.os == 'windows-latest'
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ matrix.os }}-build
-        path: out/
+        name: windows-installer
+        path: out/*.exe
+
+    - name: Create Windows update zip
+      if: matrix.os == 'windows-latest'
+      run: |
+        cd out
+        zip -r update.zip *.nupkg
+      shell: bash
+
+    - name: Upload Windows update zip
+      if: matrix.os == 'windows-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: windows-update
+        path: out/update.zip
+
+    - name: Upload macOS installer
+      if: matrix.os == 'macos-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: macos-installer
+        path: out/*.zip
+
+    - name: Upload Linux DEB installer
+      if: matrix.os == 'ubuntu-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: linux-deb-installer
+        path: out/*.deb
+
+    - name: Upload Linux RPM installer
+      if: matrix.os == 'ubuntu-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: linux-rpm-installer
+        path: out/*.rpm
 
   release:
     needs: build
