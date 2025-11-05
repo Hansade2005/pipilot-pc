@@ -1,0 +1,140 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+        include:
+          - os: windows-latest
+            build-target: win
+          - os: macos-latest
+            build-target: mac
+          - os: ubuntu-latest
+            build-target: linux
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+
+      - name: Install electron-forge and dependencies
+        run: |
+          npm install --save-dev @electron-forge/cli @electron-forge/maker-squirrel @electron-forge/maker-zip @electron-forge/maker-deb @electron-forge/maker-rpm
+
+      # Install OS-specific dependencies for building
+      - name: Install Windows dependencies (if needed)
+        if: matrix.os == 'windows-latest'
+        run: |
+          # Windows doesn't typically require additional dependencies for Electron
+
+      - name: Install macOS dependencies (if needed)
+        if: matrix.os == 'macos-latest'
+        run: |
+          # macOS doesn't typically require additional dependencies for Electron
+
+      - name: Install Linux dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libnotify-dev libappindicator3-dev libwebkit2gtk-4.0-dev libasound2-dev
+
+      - name: Build the Electron app for ${{ matrix.build-target }}
+        run: |
+          npm run make
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.build-target }}-build
+          path: |
+            out/make/**
+            !out/make/**/*.zip
+
+  package:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+
+      - name: Install electron-forge and dependencies
+        run: |
+          npm install --save-dev @electron-forge/cli @electron-forge/maker-squirrel @electron-forge/maker-zip @electron-forge/maker-deb @electron-forge/maker-rpm
+
+      - name: Package the Electron app
+        run: |
+          npm run package
+
+      - name: Upload packaged artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: packaged-app
+          path: out/package/**
+
+  release:
+    needs: [build, package]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          body: |
+            Release of version ${{ github.ref_name }}
+            
+            ## What's New
+            - Latest features and improvements
+            - Bug fixes and performance improvements
+          draft: false
+          prerelease: false
+          files: |
+            artifacts/**/pipilot-*
+            artifacts/**/setup-*.exe
+            artifacts/**/*.deb
+            artifacts/**/*.rpm
