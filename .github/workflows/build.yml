@@ -2,8 +2,13 @@ name: Build and Release
 
 on:
   workflow_dispatch:
-  release:
-    types: [published]
+    inputs:
+      tag:
+        description: 'Release tag (e.g., v1.0.0)'
+        required: true
+      release_name:
+        description: 'Release name'
+        required: true
 
 jobs:
   build:
@@ -37,3 +42,15 @@ jobs:
       with:
         name: ${{ matrix.os }}-build
         path: out/
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts
+
+    - name: Create release
+      run: gh release create ${{ github.event.inputs.tag }} --title "${{ github.event.inputs.release_name }}" --generate-notes $(find artifacts -type f)
