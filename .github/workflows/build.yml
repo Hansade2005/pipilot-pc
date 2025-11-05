@@ -80,7 +80,30 @@ jobs:
       with:
         path: artifacts
 
-    - name: Create release
+    - name: Create release and upload assets
       env:
         GH_TOKEN: ${{ github.token }}
-      run: gh release create ${{ github.event.inputs.tag }} --title "${{ github.event.inputs.release_name }}" --generate-notes $(find artifacts -type f)
+      run: |
+        set -euo pipefail
+        TAG="${{ github.event.inputs.tag }}"
+        TITLE="${{ github.event.inputs.release_name }}"
+
+        echo "Listing downloaded artifacts:"
+        ls -laR artifacts || true
+
+        # Create the release (without assets). --generate-notes will still populate release notes.
+        gh release create "$TAG" --title "$TITLE" --generate-notes || true
+
+        # Upload each file under artifacts/ robustly (handles spaces/newlines)
+        uploaded=0
+        while IFS= read -r -d '' file; do
+          echo "Uploading asset: $file"
+          gh release upload "$TAG" "$file" --clobber
+          uploaded=1
+        done < <(find artifacts -type f -print0)
+
+        if [ "$uploaded" -eq 0 ]; then
+          echo "Error: no artifact files found under artifacts/ to upload" >&2
+          exit 1
+        fi
+      shell: bash
