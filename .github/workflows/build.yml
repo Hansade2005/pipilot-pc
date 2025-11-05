@@ -36,11 +36,11 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: windows-installer
-        path: out/*.exe
+        path: out/make/squirrel.windows/x64/*.exe
 
     - name: Create Windows update zip
       if: matrix.os == 'windows-latest'
-      run: powershell Compress-Archive -Path out\*.nupkg -DestinationPath out\update.zip
+      run: powershell Compress-Archive -Path out\make\squirrel.windows\x64\*.nupkg -DestinationPath out\update.zip
       shell: powershell
 
     - name: Upload Windows update zip
@@ -55,21 +55,21 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: macos-installer
-        path: out/*.zip
+        path: out/make/zip/darwin/x64/*.zip
 
     - name: Upload Linux DEB installer
       if: matrix.os == 'ubuntu-latest'
       uses: actions/upload-artifact@v4
       with:
         name: linux-deb-installer
-        path: out/*.deb
+        path: out/make/deb/x64/*.deb
 
     - name: Upload Linux RPM installer
       if: matrix.os == 'ubuntu-latest'
       uses: actions/upload-artifact@v4
       with:
         name: linux-rpm-installer
-        path: out/*.rpm
+        path: out/make/rpm/x64/*.rpm
 
   release:
     needs: build
