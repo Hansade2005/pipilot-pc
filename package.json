@@ -5,7 +5,7 @@
   "keywords": [],
   "main": "./main.js",
   "version": "1.0.0",
-  "author": "DELL",
+  "author": "Hans Ade",
   "scripts": {
     "start": "electron-forge start",
     "package": "electron-forge package",
