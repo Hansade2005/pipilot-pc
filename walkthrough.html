@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PiPilot - Welcome</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            padding: 30px;
+            text-align: center;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+        }
+
+        .welcome-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .welcome-subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .slides-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            text-align: center;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.5s ease;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide-icon {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        .slide-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .slide-description {
+            font-size: 18px;
+            line-height: 1.6;
+            max-width: 600px;
+            opacity: 0.9;
+            margin-bottom: 40px;
+        }
+
+        .navigation {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-dots {
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .nav-dot.active {
+            background: white;
+        }
+
+        .nav-button {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid white;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .nav-button:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        .nav-button.skip {
+            background: transparent;
+            border: none;
+            opacity: 0.7;
+        }
+
+        .nav-button.skip:hover {
+            background: transparent;
+            opacity: 1;
+        }
+
+        .background-shapes {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            animation: float 8s ease-in-out infinite;
+        }
+
+        .shape:nth-child(1) {
+            width: 200px;
+            height: 200px;
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .shape:nth-child(2) {
+            width: 150px;
+            height: 150px;
+            top: 60%;
+            right: 15%;
+            animation-delay: 2s;
+        }
+
+        .shape:nth-child(3) {
+            width: 100px;
+            height: 100px;
+            bottom: 20%;
+            left: 20%;
+            animation-delay: 4s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-30px) scale(1.1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+
+    <div class="header">
+        <img src="./assets/logo.png" alt="PiPilot Logo" class="logo">
+        <div class="welcome-title">Welcome to PiPilot</div>
+        <div class="welcome-subtitle">Let's get you started with AI-powered web development</div>
+    </div>
+
+    <div class="slides-container">
+        <div class="slide active" data-slide="1">
+            <div class="slide-icon">🚀</div>
+            <div class="slide-title">AI-Powered Development</div>
+            <div class="slide-description">
+                Experience the future of web development with our advanced AI that helps you build stunning websites autonomously.
+                From concept to deployment, PiPilot handles the heavy lifting.
+            </div>
+        </div>
+
+        <div class="slide" data-slide="2">
+            <div class="slide-icon">⚡</div>
+            <div class="slide-title">Lightning Fast</div>
+            <div class="slide-description">
+                Generate complete websites in minutes, not hours. Our AI understands your vision and translates it into beautiful,
+                responsive code that works across all devices.
+            </div>
+        </div>
+
+        <div class="slide" data-slide="3">
+            <div class="slide-icon">🎨</div>
+            <div class="slide-title">Modern Design</div>
+            <div class="slide-description">
+                Create professional, modern websites with cutting-edge design principles. PiPilot ensures your site looks
+                amazing and performs flawlessly on any screen size.
+            </div>
+        </div>
+
+        <div class="slide" data-slide="4">
+            <div class="slide-icon">🌟</div>
+            <div class="slide-title">Ready to Build</div>
+            <div class="slide-description">
+                You're all set to start creating amazing websites. Click "Get Started" to begin your journey with PiPilot
+                and unlock the power of AI-driven web development.
+            </div>
+        </div>
+    </div>
+
+    <div class="navigation">
+        <button class="nav-button skip" onclick="skipWalkthrough()">Skip</button>
+        <div class="nav-dots">
+            <div class="nav-dot active" data-slide="1"></div>
+            <div class="nav-dot" data-slide="2"></div>
+            <div class="nav-dot" data-slide="3"></div>
+            <div class="nav-dot" data-slide="4"></div>
+        </div>
+        <button class="nav-button" id="nextBtn" onclick="nextSlide()">Next</button>
+    </div>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 4;
+
+        function updateNavigation() {
+            document.querySelectorAll('.nav-dot').forEach(dot => {
+                dot.classList.remove('active');
+            });
+            document.querySelector(`.nav-dot[data-slide="${currentSlide}"]`).classList.add('active');
+
+            document.querySelectorAll('.slide').forEach(slide => {
+                slide.classList.remove('active');
+            });
+            document.querySelector(`.slide[data-slide="${currentSlide}"]`).classList.add('active');
+
+            const nextBtn = document.getElementById('nextBtn');
+            if (currentSlide === totalSlides) {
+                nextBtn.textContent = 'Get Started';
+                nextBtn.onclick = startApp;
+            } else {
+                nextBtn.textContent = 'Next';
+                nextBtn.onclick = nextSlide;
+            }
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides) {
+                currentSlide++;
+                updateNavigation();
+            }
+        }
+
+        function skipWalkthrough() {
+            if (window.ipcRenderer) {
+                window.ipcRenderer.send('walkthrough-complete');
+            }
+        }
+
+        function startApp() {
+            if (window.ipcRenderer) {
+                window.ipcRenderer.send('walkthrough-complete');
+            }
+        }
+
+        // Auto-advance every 4 seconds
+        setInterval(() => {
+            if (currentSlide < totalSlides) {
+                nextSlide();
+            }
+        }, 4000);
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                if (currentSlide < totalSlides) {
+                    nextSlide();
+                } else {
+                    startApp();
+                }
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                if (currentSlide > 1) {
+                    currentSlide--;
+                    updateNavigation();
+                }
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                startApp();
+            }
+        });
+    </script>
+</body>
+</html>

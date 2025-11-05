@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>PiPilot - Test Settings</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+    .success { background: #d4edda; border-color: #c3e6cb; }
+    .error { background: #f8d7da; border-color: #f5c6cb; }
+    button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+    .result { margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <h1>PiPilot Settings Test</h1>
+
+  <div class="test-section">
+    <h3>IndexedDB Test</h3>
+    <button onclick="testIndexedDB()">Test IndexedDB</button>
+    <div id="dbResult" class="result">Click to test IndexedDB functionality</div>
+  </div>
+
+  <div class="test-section">
+    <h3>Settings Test</h3>
+    <button onclick="testSettings()">Test Settings Save/Load</button>
+    <div id="settingsResult" class="result">Click to test settings functionality</div>
+  </div>
+
+  <div class="test-section">
+    <h3>User Profile Test</h3>
+    <button onclick="testUserProfile()">Test User Profile</button>
+    <div id="profileResult" class="result">Click to test user profile functionality</div>
+  </div>
+
+  <div class="test-section">
+    <h3>Notification Test</h3>
+    <button onclick="testNotification()">Test System Notification</button>
+    <div id="notificationResult" class="result">Click to test notification functionality</div>
+  </div>
+
+  <script>
+    // IndexedDB setup (same as in settings page)
+    class PiPilotDB {
+      constructor() {
+        this.dbName = 'PiPilotDB';
+        this.version = 1;
+        this.db = null;
+      }
+
+      async init() {
+        return new Promise((resolve, reject) => {
+          const request = indexedDB.open(this.dbName, this.version);
+
+          request.onerror = () => reject(request.error);
+          request.onsuccess = () => {
+            this.db = request.result;
+            resolve(this.db);
+          };
+
+          request.onupgradeneeded = (event) => {
+            const db = event.target.result;
+
+            if (!db.objectStoreNames.contains('userProfile')) {
+              const userStore = db.createObjectStore('userProfile', { keyPath: 'id' });
+              userStore.createIndex('email', 'email', { unique: true });
+            }
+
+            if (!db.objectStoreNames.contains('settings')) {
+              db.createObjectStore('settings', { keyPath: 'key' });
+            }
+
+            if (!db.objectStoreNames.contains('projects')) {
+              const projectStore = db.createObjectStore('projects', { keyPath: 'id', autoIncrement: true });
+              projectStore.createIndex('name', 'name', { unique: false });
+              projectStore.createIndex('created', 'created', { unique: false });
+            }
+
+            if (!db.objectStoreNames.contains('analytics')) {
+              db.createObjectStore('analytics', { keyPath: 'id', autoIncrement: true });
+            }
+          };
+        });
+      }
+
+      async saveUserProfile(profile) {
+        const transaction = this.db.transaction(['userProfile'], 'readwrite');
+        const store = transaction.objectStore('userProfile');
+        return new Promise((resolve, reject) => {
+          const request = store.put({ ...profile, id: 'current' });
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error);
+        });
+      }
+
+      async getUserProfile() {
+        const transaction = this.db.transaction(['userProfile'], 'readonly');
+        const store = transaction.objectStore('userProfile');
+        return new Promise((resolve, reject) => {
+          const request = store.get('current');
+          request.onsuccess = () => resolve(request.result || {});
+          request.onerror = () => reject(request.error);
+        });
+      }
+
+      async saveSetting(key, value) {
+        const transaction = this.db.transaction(['settings'], 'readwrite');
+        const store = transaction.objectStore('settings');
+        return new Promise((resolve, reject) => {
+          const request = store.put({ key, value });
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error);
+        });
+      }
+
+      async getSetting(key) {
+        const transaction = this.db.transaction(['settings'], 'readonly');
+        const store = transaction.objectStore('settings');
+        return new Promise((resolve, reject) => {
+          const request = store.get(key);
+          request.onsuccess = () => resolve(request.result ? request.result.value : null);
+          request.onerror = () => reject(request.error);
+        });
+      }
+
+      async getAllSettings() {
+        const transaction = this.db.transaction(['settings'], 'readonly');
+        const store = transaction.objectStore('settings');
+        return new Promise((resolve, reject) => {
+          const request = store.getAll();
+          request.onsuccess = () => {
+            const settings = {};
+            request.result.forEach(item => {
+              settings[item.key] = item.value;
+            });
+            resolve(settings);
+          };
+          request.onerror = () => reject(request.error);
+        });
+      }
+
+      async clearAllData() {
+        const stores = ['userProfile', 'settings', 'projects', 'analytics'];
+        const promises = stores.map(storeName => {
+          return new Promise((resolve, reject) => {
+            const transaction = this.db.transaction([storeName], 'readwrite');
+            const store = transaction.objectStore(storeName);
+            const request = store.clear();
+            request.onsuccess = () => resolve();
+            request.onerror = () => reject(request.error);
+          });
+        });
+        return Promise.all(promises);
+      }
+    }
+
+    const db = new PiPilotDB();
+
+    async function testIndexedDB() {
+      const resultDiv = document.getElementById('dbResult');
+      try {
+        resultDiv.className = 'result';
+        resultDiv.textContent = 'Initializing IndexedDB...';
+
+        await db.init();
+        resultDiv.textContent = '✅ IndexedDB initialized successfully!';
+        resultDiv.classList.add('success');
+      } catch (error) {
+        resultDiv.textContent = `❌ IndexedDB initialization failed: ${error.message}`;
+        resultDiv.classList.add('error');
+        console.error('IndexedDB test failed:', error);
+      }
+    }
+
+    async function testSettings() {
+      const resultDiv = document.getElementById('settingsResult');
+      try {
+        resultDiv.className = 'result';
+        resultDiv.textContent = 'Testing settings functionality...';
+
+        // Test saving settings
+        await db.saveSetting('testKey', 'testValue');
+        await db.saveSetting('theme', 'dark');
+        await db.saveSetting('notifications', true);
+
+        // Test loading settings
+        const testValue = await db.getSetting('testKey');
+        const theme = await db.getSetting('theme');
+        const notifications = await db.getSetting('notifications');
+        const allSettings = await db.getAllSettings();
+
+        if (testValue === 'testValue' && theme === 'dark' && notifications === true && allSettings.testKey === 'testValue') {
+          resultDiv.textContent = '✅ Settings functionality working correctly!';
+          resultDiv.classList.add('success');
+        } else {
+          throw new Error('Settings values do not match expected results');
+        }
+      } catch (error) {
+        resultDiv.textContent = `❌ Settings test failed: ${error.message}`;
+        resultDiv.classList.add('error');
+        console.error('Settings test failed:', error);
+      }
+    }
+
+    async function testUserProfile() {
+      const resultDiv = document.getElementById('profileResult');
+      try {
+        resultDiv.className = 'result';
+        resultDiv.textContent = 'Testing user profile functionality...';
+
+        const testProfile = {
+          name: 'Test User',
+          email: 'test@example.com',
+          bio: 'This is a test profile',
+          createdAt: new Date().toISOString()
+        };
+
+        // Test saving profile
+        await db.saveUserProfile(testProfile);
+
+        // Test loading profile
+        const loadedProfile = await db.getUserProfile();
+
+        if (loadedProfile.name === testProfile.name &&
+            loadedProfile.email === testProfile.email &&
+            loadedProfile.bio === testProfile.bio) {
+          resultDiv.textContent = '✅ User profile functionality working correctly!';
+          resultDiv.classList.add('success');
+        } else {
+          throw new Error('Profile data does not match expected results');
+        }
+      } catch (error) {
+        resultDiv.textContent = `❌ User profile test failed: ${error.message}`;
+        resultDiv.classList.add('error');
+        console.error('User profile test failed:', error);
+      }
+    }
+
+    async function testNotification() {
+      const resultDiv = document.getElementById('notificationResult');
+      try {
+        resultDiv.className = 'result';
+        resultDiv.textContent = 'Testing notification functionality...';
+
+        // Test if notifications are supported
+        if ('Notification' in window) {
+          if (Notification.permission === 'granted') {
+            const notification = new Notification('PiPilot Test', {
+              body: 'This is a test notification from PiPilot!',
+              icon: './assets/logo.png'
+            });
+
+            resultDiv.textContent = '✅ Notification sent successfully! Check your system notifications.';
+            resultDiv.classList.add('success');
+
+            // Close notification after 3 seconds
+            setTimeout(() => {
+              notification.close();
+            }, 3000);
+          } else if (Notification.permission === 'denied') {
+            resultDiv.textContent = '⚠️ Notifications are blocked. Please enable them in your browser settings.';
+            resultDiv.classList.add('error');
+          } else {
+            resultDiv.textContent = 'ℹ️ Notification permission required. Click "Allow" when prompted.';
+            resultDiv.classList.add('error');
+          }
+        } else {
+          resultDiv.textContent = '❌ Notifications are not supported in this browser.';
+          resultDiv.classList.add('error');
+        }
+      } catch (error) {
+        resultDiv.textContent = `❌ Notification test failed: ${error.message}`;
+        resultDiv.classList.add('error');
+        console.error('Notification test failed:', error);
+      }
+    }
+
+    // Initialize the database when page loads
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        await db.init();
+        document.getElementById('dbResult').textContent = '✅ IndexedDB ready for testing';
+        document.getElementById('dbResult').classList.add('success');
+      } catch (error) {
+        document.getElementById('dbResult').textContent = `❌ Failed to initialize IndexedDB: ${error.message}`;
+        document.getElementById('dbResult').classList.add('error');
+      }
+    });
+  </script>
+</body>
+</html>

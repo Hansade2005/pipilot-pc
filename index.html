@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>PiPilot - AI Web Developer</title>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Loosened CSP for development -->
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self' https://pipilot.dev https://lzuknbfbvpuscpammwzg.supabase.co https://github.com https: data: blob:;
+                 script-src 'self' 'unsafe-inline' 'unsafe-eval' https://pipilot.dev https://lzuknbfbvpuscpammwzg.supabase.co;
+                 frame-src 'self' https://pipilot.dev https://lzuknbfbvpuscpammwzg.supabase.co https://github.com;
+                 style-src 'self' 'unsafe-inline' https:;">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow: hidden;
+      background: #f8f9fa;
+    }
+
+    .titlebar {
+      height: 40px;
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      -webkit-app-region: drag;
+      user-select: none;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .titlebar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .titlebar-logo {
+      width: 24px;
+      height: 24px;
+    }
+
+    .titlebar-title {
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+
+    .titlebar-center {
+      flex: 1;
+      text-align: center;
+    }
+
+    .titlebar-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      -webkit-app-region: no-drag;
+    }
+
+    .titlebar-button {
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: transparent;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      transition: background-color 0.2s ease;
+    }
+
+    .titlebar-button:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    .titlebar-button.minimize:hover {
+      background: rgba(255,255,255,0.3);
+    }
+
+    .titlebar-button.maximize:hover {
+      background: rgba(255,255,255,0.3);
+    }
+
+    .titlebar-button.close:hover {
+      background: rgba(255,0,0,0.8);
+    }
+
+    .theme-toggle {
+      background: rgba(255,255,255,0.2) !important;
+    }
+
+    .theme-toggle:hover {
+      background: rgba(255,255,255,0.3) !important;
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 100%;
+      background: white;
+      border-radius: 4px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      z-index: 1002;
+      min-width: 160px;
+    }
+
+    .dropdown-item {
+      display: block;
+      padding: 8px 12px;
+      color: #333;
+      text-decoration: none;
+      transition: background-color 0.2s ease;
+    }
+
+    .dropdown-item:hover {
+      background-color: #f0f0f0;
+    }
+
+    .content {
+      height: calc(100vh - 40px);
+      position: relative;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255,255,255,0.9);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid #667eea;
+      border-top: 3px solid transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 16px;
+    }
+
+    .loading-text {
+      color: #667eea;
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .titlebar-nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      -webkit-app-region: no-drag;
+    }
+
+    .nav-item {
+      color: white;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      padding: 8px 12px;
+      border-radius: 4px;
+      transition: background-color 0.2s ease;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+    }
+
+    .nav-item:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    .nav-dropdown {
+      position: relative;
+    }
+
+    .nav-dropdown-btn {
+      cursor: pointer;
+    }
+
+    .nav-dropdown-content {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: white;
+      border-radius: 4px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      z-index: 1002;
+      min-width: 120px;
+    }
+
+    .nav-dropdown-content.show {
+      display: block;
+    }
+
+    .nav-dropdown-item {
+      display: block;
+      padding: 8px 12px;
+      color: #333;
+      text-decoration: none;
+      transition: background-color 0.2s ease;
+      border: none;
+      background: transparent;
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .nav-dropdown-item:hover {
+      background-color: #f0f0f0;
+    }
+
+    /* Dark mode styles */
+    @media (prefers-color-scheme: dark) {
+      body {
+        background: #1a1a1a;
+        color: #e0e0e0;
+      }
+
+      .titlebar {
+        background: linear-gradient(90deg, #2d3748 0%, #4a5568 100%);
+      }
+
+      .nav-dropdown-content {
+        background: #2d3748;
+        border: 1px solid #4a5568;
+      }
+
+      .nav-dropdown-item {
+        color: #e0e0e0;
+      }
+
+      .nav-dropdown-item:hover {
+        background-color: #4a5568;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="titlebar">
+    <div class="titlebar-left">
+      <img src="./assets/logo.png" alt="PiPilot" class="titlebar-logo">
+      <div class="titlebar-title">PiPilot</div>
+    </div>
+    
+    <div class="titlebar-center">
+      <nav class="titlebar-nav">
+        <button class="nav-item" onclick="loadPage('index.html')">Home</button>
+        <button class="nav-item" onclick="loadPage('pc-workspace.html')">Workspace</button>
+        <button class="nav-item" onclick="loadPage('pc-account.html')">Account</button>
+        <div class="nav-dropdown">
+          <button class="nav-item nav-dropdown-btn" onclick="toggleToolsDropdown()">Tools ▼</button>
+          <div id="toolsDropdown" class="nav-dropdown-content">
+            <button class="nav-dropdown-item" onclick="loadPage('pc-manage.html')">Manage</button>
+            <button class="nav-dropdown-item" onclick="loadPage('pc-deploy.html')">Deploy</button>
+            <button class="nav-dropdown-item" onclick="loadPage('pc-settings.html')">Settings</button>
+          </div>
+        </div>
+      </nav>
+    </div>
+    <div class="titlebar-right">
+      <div class="theme-dropdown" style="position: relative; margin-right: 10px;">
+        <button class="titlebar-button theme-toggle" onclick="toggleThemeDropdown()">
+          <i data-lucide="sun" id="theme-icon" style="width: 16px; height: 16px;"></i>
+        </button>
+        <div id="themeDropdown" class="dropdown-content" style="display: none; position: absolute; right: 0; top: 100%; background: white; border-radius: 4px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 1002; min-width: 160px;">
+          <a href="#" class="dropdown-item" onclick="setTheme('light')">Light Theme</a>
+          <a href="#" class="dropdown-item" onclick="setTheme('dark')">Dark Theme</a>
+          <a href="#" class="dropdown-item" onclick="setTheme('system')">System Theme</a>
+        </div>
+      </div>
+      <button class="titlebar-button minimize" onclick="minimizeWindow()">─</button>
+      <button class="titlebar-button maximize" id="maximizeBtn" onclick="toggleMaximize()">□</button>
+      <button class="titlebar-button close" onclick="closeWindow()">✕</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="loading-overlay" id="loadingOverlay">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Loading PiPilot...</div>
+    </div>
+    <webview
+        id="mainWebView"
+        src="https://pipilot.dev/pc-home"
+        style="width:100%; height:100%;">
+    </webview>
+  </div>
+
+  <script>
+    // Authentication check function
+    async function checkAuthStatus() {
+      try {
+        // Get cookies from Electron session (can access cross-domain cookies)
+        const cookies = await window.cookiesAPI.getCookies({
+          domain: 'pipilot.dev',
+          name: 'sb-lzuknbfbvpuscpammwzg-auth-token'
+        });
+
+        // Check if auth token cookie exists
+        const authCookie = cookies.find(cookie => cookie.name === 'sb-lzuknbfbvpuscpammwzg-auth-token');
+
+        if (authCookie && authCookie.value && authCookie.value !== '') {
+          // User is logged in, continue loading home page
+          console.log('User is authenticated, loading home page');
+          return true;
+        } else {
+          // User is not logged in, redirect to login page
+          console.log('User not authenticated, redirecting to login');
+          window.location.href = 'pc-login.html';
+          return false;
+        }
+      } catch (error) {
+        console.error('Error checking authentication:', error);
+        // On error, redirect to login to be safe
+        window.location.href = 'pc-login.html';
+        return false;
+      }
+    }
+
+    // Handle webview events
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Check authentication first
+      if (!(await checkAuthStatus())) {
+        return; // Stop execution if not authenticated
+      }
+
+      const webview = document.getElementById('mainWebView');
+      
+      if (webview) {
+        webview.addEventListener('did-finish-load', () => {
+          console.log('PiPilot page loaded successfully.');
+          hideLoading();
+        });
+        
+        webview.addEventListener('did-fail-load', (event) => {
+          console.error('Failed to load page:', event);
+          // You could show an error message here
+        });
+
+        webview.addEventListener('did-navigate', (event) => {
+          console.log('Navigated to:', event.url);
+          // Show loading overlay again on navigation
+          const overlay = document.getElementById('loadingOverlay');
+          if (overlay) {
+            overlay.style.display = 'flex';
+          }
+        });
+
+        // Notification support
+        webview.addEventListener('ipc-message', (event) => {
+          if (event.channel === 'notification') {
+            const [title, body] = event.args;
+            showNotification(title, body);
+          }
+        });
+      }
+    });
+
+    function loadPage(page) {
+      try {
+        window.location.href = page;
+      } catch (error) {
+        console.error('Error loading page:', error);
+      }
+    }
+
+    function toggleToolsDropdown() {
+      const dropdown = document.getElementById('toolsDropdown');
+      if (dropdown) {
+        dropdown.classList.toggle('show');
+      }
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (event) => {
+      const dropdown = document.getElementById('toolsDropdown');
+      const button = event.target.closest('.nav-dropdown-btn');
+      if (dropdown && !button && !dropdown.contains(event.target)) {
+        dropdown.classList.remove('show');
+      }
+    });
+  </script>
+  <script src="./renderer.js"></script>
+</body>
+</html>
