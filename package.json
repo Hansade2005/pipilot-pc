@@ -32,21 +32,25 @@
       },
       "makers": [
         {
-          "name": "@electron-forge/maker-squirrel"
+          "name": "@electron-forge/maker-squirrel",
+          "arch": "x64"
         },
         {
           "name": "@electron-forge/maker-zip",
           "platforms": [
             "darwin"
-          ]
+          ],
+          "arch": "x64"
         },
         {
           "name": "@electron-forge/maker-deb",
-          "config": {}
+          "config": {},
+          "arch": "x64"
         },
         {
           "name": "@electron-forge/maker-rpm",
-          "config": {}
+          "config": {},
+          "arch": "x64"
         }
       ]
     }

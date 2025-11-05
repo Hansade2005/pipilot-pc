@@ -40,10 +40,8 @@ jobs:
 
     - name: Create Windows update zip
       if: matrix.os == 'windows-latest'
-      run: |
-        cd out
-        zip -r update.zip *.nupkg
-      shell: bash
+      run: powershell Compress-Archive -Path out\*.nupkg -DestinationPath out\update.zip
+      shell: powershell
 
     - name: Upload Windows update zip
       if: matrix.os == 'windows-latest'
