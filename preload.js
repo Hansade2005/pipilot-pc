@@ -27,7 +27,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   minimizeWindow: () => ipcRenderer.send('minimize-window'),
   closeWindow: () => ipcRenderer.send('close-window'),
   toggleMaximize: () => ipcRenderer.send('toggle-maximize'),
-  isMaximized: () => ipcRenderer.sendSync('is-maximized')
+  isMaximized: () => ipcRenderer.sendSync('is-maximized'),
+  send: (channel, data) => ipcRenderer.send(channel, data)
 });
 
 // Expose notification functions
@@ -40,6 +41,7 @@ contextBridge.exposeInMainWorld('notificationsAPI', {
 // Expose user data functions
 contextBridge.exposeInMainWorld('userAPI', {
   getUserData: () => ipcRenderer.invoke('get-user-data'),
+  getIndexedDBUserData: () => ipcRenderer.invoke('get-indexeddb-user-data'),
   updateProfile: (profileData) => ipcRenderer.invoke('update-user-profile', profileData),
   updateActivity: (type, value) => ipcRenderer.invoke('update-user-activity', type, value)
 });

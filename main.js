@@ -211,6 +211,55 @@ const notifications = {
   ]
 };
 
+// Function to get user data from IndexedDB
+async function getIndexedDBUserData() {
+  try {
+    // Path to the IndexedDB directory
+    const userDataPath = app.getPath('userData');
+    // Note: Directly accessing IndexedDB from Node.js is complex
+    // For now, we'll enhance the approach by getting data from the renderer
+    
+    // If we have a reference to the main window, we can execute JavaScript to get the data
+    if (mainWindow && mainWindow.webContents) {
+      const userData = await mainWindow.webContents.executeJavaScript(`
+        new Promise((resolve, reject) => {
+          try {
+            const openRequest = indexedDB.open('PiPilotDB', 1);
+            
+            openRequest.onsuccess = function() {
+              const db = openRequest.result;
+              const transaction = db.transaction(['userProfile'], 'readonly');
+              const store = transaction.objectStore('userProfile');
+              const getRequest = store.get('current');
+              
+              getRequest.onsuccess = function() {
+                resolve(getRequest.result || {});
+              };
+              
+              getRequest.onerror = function() {
+                reject(new Error('Failed to get user profile'));
+              };
+            };
+            
+            openRequest.onerror = function() {
+              reject(new Error('Failed to open database'));
+            };
+          } catch (error) {
+            reject(error);
+          }
+        });
+      `);
+      return userData;
+    }
+    
+    // Fallback to the current userData
+    return userData.profile;
+  } catch (error) {
+    console.error('Error getting IndexedDB user data:', error);
+    return userData.profile; // fallback to current userData
+  }
+}
+
 // Function to show a notification
 function showNotification(title, body) {
   if (Notification.isSupported()) {
@@ -242,7 +291,7 @@ function showRandomNotification(category) {
 }
 
 // Function to populate notification templates with dynamic data
-function populateNotificationTemplate(template, data = {}) {
+async function populateNotificationTemplate(template, data = {}) {
   let populated = {
     title: template.title,
     body: template.body
@@ -256,8 +305,8 @@ function populateNotificationTemplate(template, data = {}) {
     bugCount: data.bugCount || Math.floor(Math.random() * 20) + 1,
     serviceCount: data.serviceCount || Math.floor(Math.random() * 5) + 1,
 
-    // User profile data
-    firstName: userData.profile.firstName,
+    // User profile data - now using updated userData
+    firstName: userData.profile.name || userData.profile.firstName || 'Developer',
 
     // Community data (could be fetched from server)
     memberCount: data.memberCount || Math.floor(Math.random() * 10000) + 1000,
@@ -289,11 +338,11 @@ function populateNotificationTemplate(template, data = {}) {
 }
 
 // Function to show a populated notification from a category
-function showPopulatedNotification(category, customData = {}) {
+async function showPopulatedNotification(category, customData = {}) {
   if (notifications[category] && notifications[category].length > 0) {
     const randomIndex = Math.floor(Math.random() * notifications[category].length);
     const template = notifications[category][randomIndex];
-    const populated = populateNotificationTemplate(template, customData);
+    const populated = await populateNotificationTemplate(template, customData);
     return showNotification(populated.title, populated.body);
   }
   return false;
@@ -474,24 +523,32 @@ function createMainWindow() {
     mainWindow.show();
 
     // Test populated notification after a short delay
-    setTimeout(() => {
+    setTimeout(async () => {
       console.log('Testing populated notification...');
-      showPopulatedNotification('welcome', {
-        firstName: userData.profile.firstName,
+      await showPopulatedNotification('welcome', {
+        firstName: userData.profile.name || userData.profile.firstName,
         memberCount: 15420 // Example real data
       });
     }, 3000);
 
     // Test evening reminder with activity data
-    setTimeout(() => {
+    setTimeout(async () => {
       console.log('Testing evening reminder...');
-      showPopulatedNotification('evening_reminder');
+      await showPopulatedNotification('evening_reminder');
     }, 6000);
   });
 
   // Optional: open DevTools automatically
   // mainWindow.webContents.openDevTools();
 }
+
+// Listen for user profile updates from renderer
+ipcMain.on('update-user-profile-data', (event, profileData) => {
+  // Update the userData.profile with the new data
+  userData.profile = { ...userData.profile, ...profileData };
+  // Save to userData.json
+  saveUserData();
+});
 
 // Window control handlers
 ipcMain.on('minimize-window', () => {
@@ -596,12 +653,16 @@ ipcMain.handle('show-random-notification', async (event, category) => {
 });
 
 ipcMain.handle('show-populated-notification', async (event, category, customData) => {
-  return showPopulatedNotification(category, customData);
+  return await showPopulatedNotification(category, customData);
 });
 
 // User data handlers
 ipcMain.handle('get-user-data', async (event) => {
   return userData;
+});
+
+ipcMain.handle('get-indexeddb-user-data', async (event) => {
+  return await getIndexedDBUserData();
 });
 
 ipcMain.handle('update-user-profile', async (event, profileData) => {

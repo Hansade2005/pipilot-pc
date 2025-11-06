@@ -1266,6 +1266,12 @@
         };
 
         await db.saveUserProfile(profile);
+        
+        // Send the profile data to the main process
+        if (window.electronAPI) {
+          window.electronAPI.send('update-user-profile-data', profile);
+        }
+        
         showNotification('Profile saved successfully!', 'success');
       } catch (error) {
         console.error('Failed to save profile:', error);
