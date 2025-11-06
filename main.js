@@ -83,10 +83,6 @@ function updateUserActivity(type, value) {
 const notifications = {
   update: [
     {
-      title: '🆕 New Features',
-      body: 'Version {version} is here! Check out {featureCount} new features.'
-    },
-    {
       title: '🔧 Bug Fixes',
       body: 'We fixed {bugCount} issues based on your feedback. Thank you!'
     },
@@ -98,10 +94,7 @@ const notifications = {
       title: '🎨 UI Refresh',
       body: 'New look, same power! Check out our redesigned dashboard.'
     },
-    {
-      title: '🔐 Security Update',
-      body: 'Important security update installed. Your projects are more secure now!'
-    },
+
     {
       title: '📱 Mobile Improvements',
       body: 'Mobile experience enhanced with touch-optimized controls!'
@@ -126,7 +119,7 @@ const notifications = {
   welcome: [
     {
       title: '🎉 Welcome to PiPilot!',
-      body: 'Hi {firstName}! Let\'s build your first project together.'
+      body: 'Hi there! Let\'s build your first project together.'
     },
     {
       title: '🚀 Getting Started',
@@ -138,11 +131,11 @@ const notifications = {
     },
     {
       title: '👋 Nice to Meet You!',
-      body: 'Join {memberCount}+ developers building amazing apps. Your journey starts now!'
+      body: 'Join 50000+ developers building amazing apps. Your journey starts now!'
     },
     {
       title: '🎁 Welcome Gift',
-      body: 'Claim your {creditAmount} free credits to get started! Valid for 30 days.'
+      body: 'Claim your 50 free credits to get started! Valid for 30 days.'
     }
   ],
   onboarding: [
@@ -170,15 +163,15 @@ const notifications = {
   evening_reminder: [
     {
       title: '🌙 Evening Wrap-Up',
-      body: 'Great work today! You made {commitsCount} commits. Rest well!'
+      body: 'Great work today! You made progress. Rest well!'
     },
     {
       title: '💤 Time to Unwind',
-      body: 'You coded for {hoursToday} hours today. Take a break and recharge!'
+      body: 'You coded for  hours today. Take a break and recharge!'
     },
     {
       title: '📊 Daily Progress',
-      body: 'Today\'s achievement: {tasksCompleted} tasks completed! See your stats.'
+      body: 'Today\'s achievement: all tasks completed! See your stats.'
     },
     {
       title: '✨ Tomorrow\'s Plan',
@@ -190,11 +183,11 @@ const notifications = {
     },
     {
       title: '🌟 Daily Highlight',
-      body: 'Your best moment today: Completed {projectName}! Celebrate it!'
+      body: 'Your best moment today: Celebrate it!'
     },
     {
       title: '💪 Streak Status',
-      body: '{streakDays} day streak! Don\'t forget to commit tomorrow.'
+      body: '5 day streak! Don\'t forget to commit tomorrow.'
     },
     {
       title: '📝 Notes & Ideas',
@@ -202,11 +195,11 @@ const notifications = {
     },
     {
       title: '🎯 Tomorrow\'s Goals',
-      body: 'Set {goalCount} goals for tomorrow and start strong!'
+      body: 'Set 5 goals for tomorrow and start strong!'
     },
     {
       title: '🌃 Good Night!',
-      body: 'Rest well, {firstName}. Tomorrow brings new opportunities!'
+      body: 'Rest well,  Tomorrow brings new opportunities!'
     }
   ]
 };

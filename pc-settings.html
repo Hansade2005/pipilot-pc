@@ -7,9 +7,9 @@
 
   <!-- Loosened CSP for development -->
   <meta http-equiv="Content-Security-Policy"
-        content="default-src 'self' https://pipilot.dev https://lzuknbfbvpuscpammwzg.supabase.co https://github.com https: data: blob:;
-                 script-src 'self' 'unsafe-inline' 'unsafe-eval' https://pipilot.dev https://lzuknbfbvpuscpammwzg.supabase.co;
-                 frame-src 'self' https://pipilot.dev https://lzuknbfbvpuscpammwzg.supabase.co https://github.com;
+        content="default-src 'self' https://pipilot.dev https://lzuknbfbvpuscpammwzg.supabase.co https://github.com https://translate.google.com https://translate.googleapis.com data: blob:;
+                 script-src 'self' 'unsafe-inline' 'unsafe-eval' https://pipilot.dev https://lzuknbfbvpuscpammwzg.supabase.co https://translate.google.com https://translate.googleapis.com;
+                 frame-src 'self' https://pipilot.dev https://lzuknbfbvpuscpammwzg.supabase.co https://github.com https://translate.google.com;
                  style-src 'self' 'unsafe-inline' https:;">
   <style>
     * {
@@ -494,52 +494,18 @@
     }
 
     .theme-option.active {
+      background: #667eea;
       border-color: #667eea;
-      background: rgba(102, 126, 234, 0.1);
     }
 
     .theme-name {
-      font-size: 12px;
-      font-weight: 500;
-      color: #495057;
-      margin-top: 8px;
+      color: #e0e0e0;
     }
 
-    .language-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 12px;
-      margin-top: 16px;
-    }
-
-    .language-option {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 12px;
-      border: 1px solid #e9ecef;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .language-option:hover {
-      background: #f8f9fa;
-      border-color: #667eea;
-    }
-
-    .language-option.active {
-      background: rgba(102, 126, 234, 0.1);
-      border-color: #667eea;
-    }
-
-    .language-flag {
-      font-size: 16px;
-    }
-
-    .language-name {
-      font-size: 14px;
-      color: #495057;
+    .notification-item {
+      background: #2d3748;
+      border: 1px solid #4a5568;
+      color: #e0e0e0;
     }
 
     .backup-section {
@@ -1025,43 +991,6 @@
           </div>
         </div>
 
-        <!-- Language & Region Card -->
-        <div class="settings-card">
-          <div class="card-header">
-            <i data-lucide="globe" class="card-icon"></i>
-            <h3 class="card-title">Language & Region</h3>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Language</label>
-            <div class="language-grid">
-              <div class="language-option active" data-lang="en">
-                <span class="language-flag">🇺🇸</span>
-                <span class="language-name">English</span>
-              </div>
-              <div class="language-option" data-lang="es">
-                <span class="language-flag">🇪🇸</span>
-                <span class="language-name">Español</span>
-              </div>
-              <div class="language-option" data-lang="fr">
-                <span class="language-flag">🇫🇷</span>
-                <span class="language-name">Français</span>
-              </div>
-              <div class="language-option" data-lang="de">
-                <span class="language-flag">🇩🇪</span>
-                <span class="language-name">Deutsch</span>
-              </div>
-              <div class="language-option" data-lang="zh">
-                <span class="language-flag">🇨🇳</span>
-                <span class="language-name">中文</span>
-              </div>
-              <div class="language-option" data-lang="ja">
-                <span class="language-flag">🇯🇵</span>
-                <span class="language-name">日本語</span>
-              </div>
-            </div>
-          </div>
-        </div>
 
         <!-- About & Support Card -->
         <div class="settings-card">
@@ -1095,6 +1024,38 @@
       </div>
     </div>
   </div>
+
+  <!-- Google Translate Element -->
+  <div id="google_translate_element" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;"></div>
+
+  <script type="text/javascript">
+  function googleTranslateElementInit() {
+    try {
+      new google.translate.TranslateElement({
+        pageLanguage: 'en',
+        includedLanguages: 'en,es,fr',
+        layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+      }, 'google_translate_element');
+    } catch (error) {
+      console.error('Google Translate widget initialization error:', error);
+    }
+  }
+  
+  // Fallback in case the callback isn't triggered
+  document.addEventListener('DOMContentLoaded', function() {
+    if (typeof google === 'undefined' || !google.translate) {
+      // Try to load the script dynamically
+      var script = document.createElement('script');
+      script.type = 'text/javascript';
+      script.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+      script.onerror = function() {
+        console.error('Failed to load Google Translate script');
+      };
+      document.head.appendChild(script);
+    }
+  });
+  </script>
+  <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
   <script>
     // IndexedDB setup and management
@@ -1308,11 +1269,6 @@
         // Privacy
         document.getElementById('analyticsEnabled').checked = settings.analyticsEnabled !== false;
         document.getElementById('crashReporting').checked = settings.crashReporting !== false;
-
-        // Language & Region
-        const language = settings.language || 'en';
-        setActiveLanguage(language);
-
       } catch (error) {
         console.error('Failed to load settings:', error);
       }
@@ -1372,22 +1328,6 @@
     function setActiveTheme(theme) {
       document.querySelectorAll('.theme-option').forEach(opt => {
         opt.classList.toggle('active', opt.dataset.theme === theme);
-      });
-    }
-
-    // Language selection
-    document.querySelectorAll('.language-option').forEach(option => {
-      option.addEventListener('click', async () => {
-        const lang = option.dataset.lang;
-        setActiveLanguage(lang);
-        await db.saveSetting('language', lang);
-        showNotification(`Language changed to ${option.querySelector('.language-name').textContent}!`, 'success');
-      });
-    });
-
-    function setActiveLanguage(lang) {
-      document.querySelectorAll('.language-option').forEach(opt => {
-        opt.classList.toggle('active', opt.dataset.lang === lang);
       });
     }
 
