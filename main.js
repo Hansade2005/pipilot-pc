@@ -31,7 +31,8 @@ let userData = {
   app: {
     version: app.getVersion() || '1.0.0',
     installDate: new Date().toISOString(),
-    lastUpdateCheck: new Date().toISOString()
+    lastUpdateCheck: new Date().toISOString(),
+    hasCompletedWalkthrough: false
   }
 };
 
@@ -321,7 +322,12 @@ function createSplashWindow() {
 
   ipcMain.once('splash-complete', () => {
     splashWindow.close();
-    createWalkthroughWindow();
+    // Check if it's the first launch
+    if (!userData.app.hasCompletedWalkthrough) {
+      createWalkthroughWindow();
+    } else {
+      createMainWindow();
+    }
   });
 }
 
@@ -346,6 +352,9 @@ function createWalkthroughWindow() {
 
   ipcMain.once('walkthrough-complete', () => {
     walkthroughWindow.close();
+    // Mark walkthrough as completed
+    userData.app.hasCompletedWalkthrough = true;
+    saveUserData();
     createMainWindow();
   });
 }
