@@ -5,8 +5,10 @@ const { app, BrowserWindow, ipcMain, session, Notification, nativeTheme } = requ
 const path = require('path');
 const fs = require('fs').promises;
 
-// Set AppUserModelID for proper icon usage on Windows
-app.setAppUserModelId('com.hansade2005.pipilot');
+// Handle Squirrel events for Windows shortcuts
+if (require('electron-squirrel-startup')) {
+  app.quit();
+}
 
 let mainWindow;
 let splashWindow;
