@@ -24,43 +24,7 @@
     "@electron-forge/maker-dmg": "7.8.1"
   },
   "config": {
-    "forge": {
-      "packagerConfig": {
-        "icon": "assets/icons/icon.ico",
-        "win32metadata": {
-          "minimumSystemVersion": "10.0.0"
-        }
-      },
-      "makers": [
-        {
-          "name": "@electron-forge/maker-squirrel",
-          "arch": "x64"
-        },
-        {
-          "name": "@electron-forge/maker-dmg",
-          "platforms": [
-            "darwin"
-          ]
-        },
-        {
-          "name": "@electron-forge/maker-zip",
-          "platforms": [
-            "darwin"
-          ],
-          "arch": "x64"
-        },
-        {
-          "name": "@electron-forge/maker-deb",
-          "config": {},
-          "arch": "x64"
-        },
-        {
-          "name": "@electron-forge/maker-rpm",
-          "config": {},
-          "arch": "x64"
-        }
-      ]
-    }
+    "forge": "forge.config.js"
   },
   "license": "MIT"
 }
